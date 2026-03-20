@@ -34,19 +34,19 @@ export function MonthYearSelector() {
 	}
 
 	return (
-		<div className='flex lg:flex-row flex-col items-center justify-between gap-2.5'>
+		<div className='flex lg:flex-row flex-col items-center justify-between gap-3'>
 			{/* Year navigation */}
-			<div className='flex items-center justify-between rounded-xl border border-surface-200 bg-white px-3 py-2 dark:border-surface-700 dark:bg-surface-800'>
+			<div className='flex items-center justify-between rounded-xl border border-surface-200 bg-white px-4 py-3 dark:border-surface-700 dark:bg-surface-800 shadow-sm'>
 				<button
 					id='prev-year-button'
 					onClick={handlePreviousYear}
 					disabled={!canGoBack}
-					className='flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg text-surface-500 transition-colors hover:bg-surface-100 disabled:cursor-not-allowed disabled:opacity-30 dark:text-surface-400 dark:hover:bg-surface-700'
+					className='flex h-12 w-12 cursor-pointer items-center justify-center rounded-lg text-surface-500 transition-colors hover:bg-surface-100 disabled:cursor-not-allowed disabled:opacity-30 dark:text-surface-400 dark:hover:bg-surface-700'
 					aria-label='Ano anterior'>
-					<ChevronLeft className='h-5 w-5' />
+					<ChevronLeft className='h-6 w-6' />
 				</button>
 
-				<span className='text-base font-semibold text-surface-800 dark:text-surface-200'>
+				<span className='text-lg font-bold text-surface-800 dark:text-surface-200 px-3'>
 					{selectedYear}
 				</span>
 
@@ -54,16 +54,16 @@ export function MonthYearSelector() {
 					id='next-year-button'
 					onClick={handleNextYear}
 					disabled={!canGoForward}
-					className='flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg text-surface-500 transition-colors hover:bg-surface-100 disabled:cursor-not-allowed disabled:opacity-30 dark:text-surface-400 dark:hover:bg-surface-700'
+					className='flex h-12 w-12 cursor-pointer items-center justify-center rounded-lg text-surface-500 transition-colors hover:bg-surface-100 disabled:cursor-not-allowed disabled:opacity-30 dark:text-surface-400 dark:hover:bg-surface-700'
 					aria-label='Próximo ano'>
-					<ChevronRight className='h-5 w-5' />
+					<ChevronRight className='h-6 w-6' />
 				</button>
 			</div>
 
 			{/* Month pills */}
 			<div
 				ref={scrollContainerRef}
-				className='no-scrollbar flex gap-1.5 overflow-x-auto pb-0.5 w-full'>
+				className='no-scrollbar flex gap-2 overflow-x-auto pb-0.5 w-full'>
 				{MONTHS.map((month) => {
 					const isSelected = month.value === selectedMonth;
 
@@ -75,8 +75,8 @@ export function MonthYearSelector() {
 							onClick={() => setMonth(month.value)}
 							className={
 								isSelected
-									? 'shrink-0 h-9 w-9 rounded-xl px-5 text-sm font-semibold transition-all bg-primary-500 text-white shadow-sm shadow-primary-500/30'
-									: 'shrink-0 h-9 w-9 rounded-xl px-5 text-sm font-medium transition-all bg-surface-100 text-surface-600 hover:bg-surface-200 dark:bg-surface-800 dark:text-surface-400 dark:hover:bg-surface-700'
+									? 'shrink-0 h-11 w-15 rounded-xl px-5 text-base font-semibold transition-all bg-primary-500 text-white shadow-md shadow-primary-500/30'
+									: 'shrink-0 h-11 w-15 rounded-xl px-5 text-base font-medium transition-all bg-surface-100 text-surface-600 hover:bg-surface-200 dark:bg-surface-800 dark:text-surface-400 dark:hover:bg-surface-700'
 							}>
 							{month.label}
 						</button>

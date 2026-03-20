@@ -34,7 +34,10 @@ export const DEFAULT_CATEGORIES = {
   ],
   INCOME: [
     { name: 'Salário', icon: 'banknote', color: '#10B981' },
-    { name: 'Freelance', icon: 'laptop', color: '#3B82F6' },
+    { name: 'Plantão SAMU', icon: 'ambulance', color: '#EF4444' },
+    { name: 'Aeromédico', icon: 'plane', color: '#3B82F6' },
+    { name: 'UPA', icon: 'hospital', color: '#F97316' },
+    { name: 'Freelance', icon: 'laptop', color: '#6366F1' },
     { name: 'Investimentos', icon: 'trending-up', color: '#8B5CF6' },
     { name: 'Outros', icon: 'ellipsis', color: '#6B7280' },
   ],

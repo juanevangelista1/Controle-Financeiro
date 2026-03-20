@@ -14,7 +14,8 @@ import { createTransactionSchema, TRANSACTION_TYPES } from '@controle-financeiro
 type TransactionFormType = 'INCOME' | 'EXPENSE';
 
 interface FormState {
-	amount: string;
+	// stored as raw digit string representing cents, e.g. "150050" = R$ 1.500,50
+	amountCents: string;
 	type: TransactionFormType;
 	description: string;
 	date: string;
@@ -22,7 +23,7 @@ interface FormState {
 }
 
 const INITIAL_FORM_STATE: FormState = {
-	amount: '',
+	amountCents: '',
 	type: 'EXPENSE',
 	description: '',
 	date: getCurrentDateString(),
@@ -30,9 +31,27 @@ const INITIAL_FORM_STATE: FormState = {
 };
 
 const INPUT_CLASS =
-	'w-full rounded-xl border border-surface-200 bg-white px-4 py-3.5 text-base text-surface-900 placeholder:text-surface-300 transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-surface-700 dark:bg-surface-800 dark:text-white dark:placeholder:text-surface-600';
+	'w-full rounded-xl border border-surface-200 bg-white px-4 py-4 text-lg text-surface-900 placeholder:text-surface-300 transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-surface-700 dark:bg-surface-800 dark:text-white dark:placeholder:text-surface-600';
 
-const LABEL_CLASS = 'mb-1.5 block text-base font-medium text-surface-700 dark:text-surface-300';
+const LABEL_CLASS = 'mb-2 block text-lg font-semibold text-surface-700 dark:text-surface-300';
+
+/** Converts raw digit string (cents) to display string like "R$ 1.500,50" */
+function formatAmountDisplay(digits: string): string {
+	if (!digits) return '';
+	const cents = parseInt(digits, 10);
+	if (isNaN(cents)) return '';
+	return (cents / 100).toLocaleString('pt-BR', {
+		style: 'currency',
+		currency: 'BRL',
+		minimumFractionDigits: 2,
+		maximumFractionDigits: 2,
+	});
+}
+
+/** Converts a float amount (e.g. 1500.50) to raw digit cents string "150050" */
+function floatToCentsString(value: number): string {
+	return String(Math.round(value * 100));
+}
 
 export function TransactionFormPage() {
 	const navigate = useNavigate();
@@ -50,7 +69,7 @@ export function TransactionFormPage() {
 	useEffect(() => {
 		if (isEditMode && existingTransaction) {
 			setFormState({
-				amount: String(existingTransaction.amount),
+				amountCents: floatToCentsString(existingTransaction.amount),
 				type: existingTransaction.type as TransactionFormType,
 				description: existingTransaction.description ?? '',
 				date: existingTransaction.date,
@@ -63,6 +82,13 @@ export function TransactionFormPage() {
 
 	function updateFormField(field: keyof FormState, value: string) {
 		setFormState((previousState) => ({ ...previousState, [field]: value }));
+	}
+
+	function handleAmountChange(event: React.ChangeEvent<HTMLInputElement>) {
+		const digits = event.target.value.replace(/\D/g, '');
+		// Remove leading zeros but keep at least one digit
+		const normalized = digits.replace(/^0+/, '') || '';
+		updateFormField('amountCents', normalized);
 	}
 
 	function handleTypeChange(type: TransactionFormType) {
@@ -78,7 +104,8 @@ export function TransactionFormPage() {
 	function handleSubmit(event: React.SyntheticEvent<HTMLFormElement>) {
 		event.preventDefault();
 
-		const parsedAmount = parseFloat(formState.amount);
+		const cents = parseInt(formState.amountCents || '0', 10);
+		const parsedAmount = cents / 100;
 
 		if (isNaN(parsedAmount) || parsedAmount <= 0) {
 			toast.error('Insira um valor válido');
@@ -159,24 +186,24 @@ export function TransactionFormPage() {
 					id='type-expense-button'
 					type='button'
 					onClick={() => handleTypeChange('EXPENSE')}
-					className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-3 text-base font-medium transition-all ${
+					className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-4 text-lg font-semibold transition-all ${
 						isExpense
 							? 'bg-danger-500 text-white shadow-md shadow-danger-500/25'
 							: 'text-surface-500 hover:text-surface-700 dark:text-surface-400'
 					}`}>
-					<TrendingDown className='h-5 w-5' />
+					<TrendingDown className='h-6 w-6' />
 					Despesa
 				</button>
 				<button
 					id='type-income-button'
 					type='button'
 					onClick={() => handleTypeChange('INCOME')}
-					className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-3 text-base font-medium transition-all ${
+					className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-4 text-lg font-semibold transition-all ${
 						isIncome
 							? 'bg-success-500 text-white shadow-md shadow-success-500/25'
 							: 'text-surface-500 hover:text-surface-700 dark:text-surface-400'
 					}`}>
-					<TrendingUp className='h-5 w-5' />
+					<TrendingUp className='h-6 w-6' />
 					Receita
 				</button>
 			</div>
@@ -190,17 +217,16 @@ export function TransactionFormPage() {
 					<label
 						htmlFor='transaction-amount'
 						className={LABEL_CLASS}>
-						Valor (R$)
+						Valor
 					</label>
 					<input
 						id='transaction-amount'
-						type='number'
-						step='0.01'
-						min='0'
-						placeholder='0,00'
-						value={formState.amount}
-						onChange={(event) => updateFormField('amount', event.target.value)}
-						className={`${INPUT_CLASS} text-xl md:text-2xl font-semibold h-14`}
+						type='text'
+						inputMode='numeric'
+						placeholder='R$ 0,00'
+						value={formatAmountDisplay(formState.amountCents)}
+						onChange={handleAmountChange}
+						className={`${INPUT_CLASS} text-2xl md:text-3xl font-semibold h-16`}
 						required
 					/>
 				</div>
@@ -269,12 +295,12 @@ export function TransactionFormPage() {
 					id='submit-transaction'
 					type='submit'
 					disabled={isSubmitting}
-					className={`flex w-full items-center justify-center gap-2 rounded-xl py-4 text-base font-bold text-white shadow-lg transition-all active:scale-[0.98] disabled:opacity-60 mt-2 ${
+					className={`flex w-full items-center justify-center gap-2 rounded-xl py-5 text-xl font-bold text-white shadow-lg transition-all active:scale-[0.98] disabled:opacity-60 mt-2 ${
 						isExpense
 							? 'bg-danger-500 shadow-danger-500/25 hover:bg-danger-600'
 							: 'bg-success-500 shadow-success-500/25 hover:bg-success-600'
 					}`}>
-					<Save className='h-5 w-5' />
+					<Save className='h-6 w-6' />
 					{getSubmitButtonLabel()}
 				</button>
 			</form>
