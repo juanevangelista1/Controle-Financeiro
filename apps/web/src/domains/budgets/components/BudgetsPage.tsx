@@ -100,9 +100,9 @@ export function BudgetsPage() {
         <button
           id="add-budget-button"
           onClick={handleOpenFormModal}
-          className="flex items-center gap-2 rounded-xl bg-primary-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-primary-500/25 transition-all hover:bg-primary-600 active:scale-95"
+          className="flex cursor-pointer items-center gap-2 rounded-xl bg-primary-500 px-5 py-2.5 text-base font-semibold text-white shadow-lg shadow-primary-500/25 transition-all hover:bg-primary-600 active:scale-95"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-5 w-5" />
           Novo
         </button>
       </div>
@@ -115,7 +115,8 @@ export function BudgetsPage() {
           description="Toque em Novo para definir limites de gasto por categoria"
         />
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 md:grid md:grid-cols-2 md:gap-6">
+          <div className="flex flex-col gap-3">
           {budgets.map((budget) => {
             const budgetBarColorClass = getBudgetBarColor(budget.percentage);
             const isOverBudget = budget.percentage >= BUDGET_DANGER_THRESHOLD;
@@ -123,26 +124,26 @@ export function BudgetsPage() {
             return (
               <div
                 key={budget.id}
-                className="rounded-2xl border border-surface-200 bg-white p-4 dark:border-surface-800 dark:bg-surface-900"
+                className="rounded-2xl border border-surface-200 bg-white p-5 dark:border-surface-800 dark:bg-surface-900"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex items-center gap-4 min-w-0">
                     <div
-                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
                       style={{
                         backgroundColor: (budget.category?.color ?? '#6B7280') + '20',
                       }}
                     >
                       <div
-                        className="h-3 w-3 rounded-full"
+                        className="h-4 w-4 rounded-full"
                         style={{ backgroundColor: budget.category?.color ?? '#6B7280' }}
                       />
                     </div>
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-surface-800 dark:text-surface-200">
+                      <p className="truncate text-base font-semibold text-surface-800 dark:text-surface-200">
                         {budget.category?.name ?? 'Categoria desconhecida'}
                       </p>
-                      <p className="text-xs text-surface-400">
+                      <p className="text-sm text-surface-400">
                         {formatCurrency(budget.spent)} de {formatCurrency(budget.amount)}
                       </p>
                     </div>
@@ -150,7 +151,7 @@ export function BudgetsPage() {
 
                   <div className="flex shrink-0 items-center gap-2">
                     {isOverBudget && (
-                      <AlertCircle className="h-4 w-4 text-danger-500" aria-label="Limite excedido" />
+                      <AlertCircle className="h-5 w-5 text-danger-500" aria-label="Limite excedido" />
                     )}
                     <span
                       className={`text-sm font-bold ${
@@ -162,9 +163,9 @@ export function BudgetsPage() {
                     <button
                       id={`delete-budget-${budget.id}`}
                       onClick={() => setBudgetToDelete(budget.id)}
-                      className="rounded-lg p-1.5 text-surface-400 transition-colors hover:bg-danger-50 hover:text-danger-500 dark:hover:bg-danger-500/10"
+                      className="cursor-pointer rounded-lg p-2 text-surface-400 transition-colors hover:bg-danger-50 hover:text-danger-500 dark:hover:bg-danger-500/10"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-5 w-5" />
                     </button>
                   </div>
                 </div>
@@ -172,39 +173,57 @@ export function BudgetsPage() {
                 <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface-100 dark:bg-surface-800">
                   <div
                     className={`h-full rounded-full transition-all duration-500 ${budgetBarColorClass}`}
-                    style={{ width: `${budget.percentage}%` }}
+                    style={{ width: `${Math.min(budget.percentage, 100)}%` }}
                   />
                 </div>
               </div>
             );
           })}
         </div>
-      )}
 
       {/* Budget summary */}
-      {budgets.length > 0 && (
-        <section className="rounded-2xl border border-surface-200 bg-white p-4 dark:border-surface-800 dark:bg-surface-900">
-          <div className="flex items-center gap-2 mb-3">
-            <Target className="h-4 w-4 text-primary-500" />
-            <h2 className="text-sm font-semibold text-surface-700 dark:text-surface-300">
-              Resumo do Mês
-            </h2>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-xl bg-surface-50 p-3 dark:bg-surface-800">
-              <p className="text-xs text-surface-500 dark:text-surface-400">Total orçado</p>
-              <p className="mt-1 text-sm font-bold text-surface-800 dark:text-surface-200">
-                {formatCurrency(budgets.reduce((sum, b) => sum + b.amount, 0))}
-              </p>
+      {(() => {
+        const totalBudgeted = budgets.reduce((sum, b) => sum + b.amount, 0);
+        const totalSpent = budgets.reduce((sum, b) => sum + b.spent, 0);
+        const totalRemaining = totalBudgeted - totalSpent;
+        const isOverall = totalSpent > totalBudgeted;
+
+        return (
+          <div className="h-fit">
+          <section className="rounded-2xl border border-surface-200 bg-white p-5 dark:border-surface-800 dark:bg-surface-900 md:sticky md:top-24">
+            <div className="flex items-center gap-2 mb-4">
+              <Target className="h-5 w-5 text-primary-500" />
+              <h2 className="text-base font-semibold text-surface-700 dark:text-surface-300">
+                Resumo do Mês
+              </h2>
             </div>
-            <div className="rounded-xl bg-surface-50 p-3 dark:bg-surface-800">
-              <p className="text-xs text-surface-500 dark:text-surface-400">Total gasto</p>
-              <p className="mt-1 text-sm font-bold text-danger-600 dark:text-danger-500">
-                {formatCurrency(budgets.reduce((sum, b) => sum + b.spent, 0))}
-              </p>
+            <div className="grid grid-cols-3 gap-3 md:flex md:flex-col md:gap-4">
+              <div className="rounded-xl bg-surface-50 p-4 dark:bg-surface-800">
+                <p className="text-xs font-medium text-surface-500 dark:text-surface-400">Orçado</p>
+                <p className="mt-2 text-base font-bold text-surface-800 dark:text-surface-200 md:text-xl">
+                  {formatCurrency(totalBudgeted)}
+                </p>
+              </div>
+              <div className="rounded-xl bg-danger-50 p-4 dark:bg-danger-500/10">
+                <p className="text-xs font-medium text-danger-600 dark:text-danger-400">Gasto</p>
+                <p className="mt-2 text-base font-bold text-danger-700 dark:text-danger-300 md:text-xl">
+                  {formatCurrency(totalSpent)}
+                </p>
+              </div>
+              <div className={`rounded-xl p-4 ${isOverall ? 'bg-danger-50 dark:bg-danger-500/10' : 'bg-success-50 dark:bg-success-500/10'}`}>
+                <p className={`text-xs font-medium ${isOverall ? 'text-danger-600 dark:text-danger-400' : 'text-success-600 dark:text-success-400'}`}>
+                  Restante
+                </p>
+                <p className={`mt-2 text-base font-bold md:text-xl ${isOverall ? 'text-danger-700 dark:text-danger-300' : 'text-success-700 dark:text-success-300'}`}>
+                  {isOverall ? '-' : ''}{formatCurrency(Math.abs(totalRemaining))}
+                </p>
+              </div>
             </div>
+          </section>
           </div>
-        </section>
+        );
+      })()}
+        </div>
       )}
 
       {/* Add budget modal */}
@@ -213,7 +232,7 @@ export function BudgetsPage() {
           <div>
             <label
               htmlFor="budget-category"
-              className="mb-1.5 block text-sm font-medium text-surface-700 dark:text-surface-300"
+              className="mb-1.5 block text-base font-medium text-surface-700 dark:text-surface-300"
             >
               Categoria
             </label>
@@ -221,7 +240,7 @@ export function BudgetsPage() {
               id="budget-category"
               value={formState.categoryId}
               onChange={(event) => updateFormField('categoryId', event.target.value)}
-              className="w-full appearance-none rounded-xl border border-surface-200 bg-white px-4 py-3 text-sm text-surface-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-surface-700 dark:bg-surface-800 dark:text-white"
+              className="w-full appearance-none rounded-xl border border-surface-200 bg-white px-4 py-3.5 text-base text-surface-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-surface-700 dark:bg-surface-800 dark:text-white"
               required
             >
               <option value="">Selecione uma categoria</option>
@@ -236,7 +255,7 @@ export function BudgetsPage() {
           <div>
             <label
               htmlFor="budget-amount"
-              className="mb-1.5 block text-sm font-medium text-surface-700 dark:text-surface-300"
+              className="mb-1.5 block text-base font-medium text-surface-700 dark:text-surface-300"
             >
               Limite (R$)
             </label>
@@ -248,22 +267,22 @@ export function BudgetsPage() {
               placeholder="0,00"
               value={formState.amount}
               onChange={(event) => updateFormField('amount', event.target.value)}
-              className="w-full rounded-xl border border-surface-200 bg-white px-4 py-3 text-lg font-semibold text-surface-900 placeholder:text-surface-300 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-surface-700 dark:bg-surface-800 dark:text-white"
+              className="w-full rounded-xl border border-surface-200 bg-white px-4 py-3.5 text-xl font-semibold text-surface-900 placeholder:text-surface-300 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-surface-700 dark:bg-surface-800 dark:text-white"
               required
             />
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-3 mt-2">
             <button
               type="button"
               onClick={handleCloseFormModal}
-              className="flex-1 rounded-xl border border-surface-200 bg-white px-4 py-2.5 text-sm font-medium text-surface-700 transition-colors hover:bg-surface-50 dark:border-surface-700 dark:bg-surface-800 dark:text-surface-300"
+              className="flex-1 cursor-pointer rounded-xl border border-surface-200 bg-white px-4 py-3 text-base font-medium text-surface-700 transition-colors hover:bg-surface-50 dark:border-surface-700 dark:bg-surface-800 dark:text-surface-300"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="flex-1 rounded-xl bg-primary-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-600"
+              className="flex-1 cursor-pointer rounded-xl bg-primary-500 px-4 py-3 text-base font-semibold text-white transition-colors hover:bg-primary-600"
             >
               Salvar
             </button>

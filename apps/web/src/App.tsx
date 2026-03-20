@@ -8,11 +8,11 @@ import { TransactionListPage } from './domains/transactions/components/Transacti
 import { TransactionFormPage } from './domains/transactions/components/TransactionFormPage';
 import { ReportsPage } from './domains/reports/components/ReportsPage';
 import { BudgetsPage } from './domains/budgets/components/BudgetsPage';
-import { SettingsPage } from './domains/settings/components/SettingsPage';
 
 function AppInitializer() {
   useEffect(() => {
     seedDefaultCategories();
+
   }, []);
 
   return null;
@@ -31,7 +31,6 @@ export function App() {
             <Route path="/transactions/:id" element={<TransactionFormPage />} />
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/budgets" element={<BudgetsPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
           </Route>
         </Routes>
       </BrowserRouter>
